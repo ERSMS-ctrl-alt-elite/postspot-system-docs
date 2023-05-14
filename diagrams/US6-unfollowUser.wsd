@@ -1,0 +1,29 @@
+@startuml
+autonumber "<b>[###]"
+title
+ Ref: US6
+end title
+
+participant  MobileApp as app
+box "Backend Server" #LightBlue
+    participant UserService as user
+    database UserDB as db
+end box
+
+
+activate app
+app -> user : DELETE /api/v1/users/followers/{followee_id}?follower={follower_id}
+activate user
+
+user -> db: <DELETE FROM follower WHERE (<followee_id, follower_id>)>
+
+alt Error exists (ref: US2.4)
+    user --> app: Status: 4XX/5XX 
+else
+    user --> app: Status: 200 OK
+    deactivate app
+end
+deactivate user
+
+
+@enduml

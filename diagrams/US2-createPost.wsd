@@ -1,0 +1,45 @@
+@startuml
+autonumber "<b>[###]"
+title
+ Ref: US2 
+end title
+
+participant  MobileApp as app
+
+box "Backend Server" #LightBlue
+    participant PostingService as post
+    database PostingDB as postDB
+    participant NotificationService as not
+end box
+
+/' participant  FollowerMobileApp as follower '/
+
+activate app
+app -> post : POST /api/v1/posts
+activate post
+
+post -> postDB: <INSERT INTO posts VALUES (<postData>)>
+
+alt Error exists (ref: US2.4)
+    post -> app: Status: 4XX/5XX
+else
+    post --> app: Status: 201 Created
+    deactivate app
+
+    post -> not: postspot.notification.post.queue
+    activate not
+    note right: Start notification flow
+
+/'
+    alt current user has followers 
+        not -> follower: postspot.notification.{followed-username}.post.topic
+        activate follower
+        note left: [?] jak przesyłamy notyfikację
+
+    end
+'/
+
+end
+
+
+@enduml

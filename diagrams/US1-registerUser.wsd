@@ -1,0 +1,36 @@
+@startuml
+autonumber "<b>[###]"
+title
+ Ref: US1 
+end title
+
+participant  MobileApp as app
+
+box "Backend Server" #LightBlue
+    participant UserService as user
+    database UserDB as DB
+end box
+participant  GoogleIdentity as google
+
+activate app
+app -> google: do authentication
+activate google
+google --> app: Status 200 OK (Token)
+deactivate google
+ 
+ == Sign up ==
+app -> user: POST /api/v1/users/registration
+activate user
+user -> DB: <SELECT * FROM user WHERE id={google_id}
+activate DB
+
+alt user empty
+    user -> DB: <INSERT INTO user VALUES (google_id, name)
+    deactivate DB
+    user -> app: Status 201 Created
+else exists error or user is empty
+    user -> app: Status 4XX/5XX
+end 
+
+
+@enduml

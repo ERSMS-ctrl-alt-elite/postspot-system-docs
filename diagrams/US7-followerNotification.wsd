@@ -1,0 +1,40 @@
+@startuml
+autonumber "<b>[###]"
+title
+ Ref: US2 
+end title
+
+participant  MobileApp as app
+box "Backend Server" #LightBlue
+    participant PostingService as post
+    participant NotificationService as not
+    participant UserService as user
+    database UserDB as userDB
+end box
+
+activate post
+note over post: Triggered after creating post
+post -> not: postspot.notification.post.queue (post_id, user_id)
+deactivate post
+activate not
+not -> user: GET /api/v1/users/followers/{user_id}
+activate user
+user ->userDB: <SELECT * FROM follower WHERE follower_id={user_id}>
+activate userDB
+
+alt follower not empty
+    user ->userDB: <SELECT registartion_id FROM user WHERE id={follower_id}>
+    deactivate userDB
+    user --> not: Status 200 OK ([registartion_id])
+    
+    activate app
+    not -> app: POST /fcm/send (FCM: [registartion_id], post_id)
+    app --> not: Status 2XX (SuccessList)
+    deactivate app
+else
+    user --> not: Status 204 No content
+    deactivate user
+end
+
+
+@enduml

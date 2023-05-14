@@ -1,0 +1,30 @@
+@startuml
+autonumber "<b>[###]"
+title
+ Ref: US3 
+end title
+
+participant  MobileApp as app
+
+box "Backend Server" #LightBlue
+    participant PostingService as post
+    database PostingDB as postDB
+end box
+
+activate app
+app -> app: retrieve GPS location
+app -> post:  GET /api/v1/posts?lat={myLat}&long={myLong}
+activate post
+post -> postDB: <SELECT * FROM post WHERE <posts in my range>>
+
+alt exists Error
+    post --> app: Status 4XX/5XX
+else 
+    post --> app: Status 200 (postList(post_id,lat,long))
+end
+
+
+deactivate post
+deactivate app 
+
+@enduml

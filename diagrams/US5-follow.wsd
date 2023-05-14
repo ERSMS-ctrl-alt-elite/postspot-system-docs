@@ -1,0 +1,29 @@
+@startuml
+autonumber "<b>[###]"
+title
+ Ref: US5
+end title
+
+participant  MobileApp as app
+box "Backend Server" #LightBlue
+    participant UserService as user
+    database UserDB as db
+end box
+
+
+activate app
+app -> user : POST /api/v1/users/followers
+activate user
+
+user -> db: <INSERT INTO follower VALUES (<id_followee, id_follower>)>
+
+alt Error exists (ref: US2.4)
+    user -> app: Status 4XX/5XX
+else
+    user --> app: Status: 201 Created
+    deactivate app
+end
+deactivate user
+
+
+@enduml

@@ -1,0 +1,22 @@
+@startuml
+autonumber "<b>[###]"
+title
+ Ref: US8 - As a PostSpot user I want to read notification
+end title
+
+participant  MobileApp as app
+box "Backend Server" #LightBlue
+    participant PostingService as post
+    database PostingDB as postDB
+end box
+
+activate app
+app -> post: GET /api/v1/posts/{post_id}/locations
+activate post
+post -> postDB: <SELECT user_id, lat, long FROM post WHERE id={post_id}
+
+alt exists Error 
+    post --> app: Status 4XX/5XX
+end
+    post --> app: Status 200 OK (user_id, lat, long)
+@enduml
